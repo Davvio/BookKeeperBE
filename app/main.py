@@ -7,10 +7,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "https://bookkeeperfe.onrender.com",  # Render frontend
+    "http://localhost:5173",              # Vite dev
+    "http://localhost:3000",              # (optional) alt dev ports
+]
+
 # 1️⃣ CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
