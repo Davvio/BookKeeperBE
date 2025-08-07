@@ -1,24 +1,33 @@
 version: '3.8'
 services:
   db:
-    image: mariadb:10.11
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: BK
-      MYSQL_USER: BK_user
-      MYSQL_PASSWORD: BK_password
+      POSTGRES_DB: BK
+      POSTGRES_USER: Davvi
+      POSTGRES_PASSWORD: 5565
+    ports:
+      - "5432:5432"
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U Davvi -d BK" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 
   backend:
     build: .
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql+psycopg://Davvi:5565@db:5432/BK
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ALGORITHM=${JWT_ALGORITHM}
 
 volumes:
-  mariadb_data:
+  pg_data:
