@@ -1,3 +1,7 @@
+import os
+
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -36,10 +40,17 @@ app.include_router(items_router)
 app.include_router(settings_router)
 app.include_router(values_router)
 
+def run_migrations():
+    cfg = Config("alembic.ini")
+    command.upgrade(cfg, "head")
 
 @app.on_event("startup")
 def on_startup():
-    # idempotent: safe on Render restarts
+    # 1) Run migrations first (only when enabled via env var)
+    if os.getenv("RUN_MIGRATIONS") == "1":
+        run_migrations()
+
+    # 2) Seed AFTER migrations
     db = SessionLocal()
     try:
         seed_minimal(db)
