@@ -13,5 +13,10 @@ def login(form: UserLogin, db: Session = Depends(get_db)):
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(401, "Invalid credentials")
 
-    token = create_jwt_token({"sub": str(user.id)})
+    token = create_jwt_token({
+        "sub": str(user.id),
+        "username": user.username,
+        "role": user.role,
+        "structure_id": user.structure_id,
+    })
     return {"access_token": token, "token_type": "bearer", "role": user.role}

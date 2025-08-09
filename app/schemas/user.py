@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+# app/schemas/user.py
+from pydantic import BaseModel, constr
 from typing import Literal
 
 class UserLogin(BaseModel):
@@ -6,9 +7,9 @@ class UserLogin(BaseModel):
     password: str
 
 class UserCreate(BaseModel):
-    username: str
-    password: str
-    role: Literal["EMPLOYEE", "ADMIN"] = "EMPLOYEE"
+    username: constr(min_length=3, max_length=50)
+    password: constr(min_length=6, max_length=128)
+    role: Literal["EMPLOYEE", "ADMIN", "GUILDMASTER"]
 
 class UserOut(BaseModel):
     id: int

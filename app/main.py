@@ -1,9 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import Base, engine
-from app.routes import auth, trades, users
 
-Base.metadata.create_all(bind=engine)
+from app.core.database import Base
+from app.core.database import engine, SessionLocal
+from app.routes import auth, trades, users
+from app.routes.item_values import router as values_router
+from app.routes.items import router as items_router
+from app.routes.structure_settings import router as settings_router
+from app.services.seed import seed_minimal
+
+#Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -26,3 +32,16 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(trades.router, prefix="/trades", tags=["Trades"])
 app.include_router(users.router)
+app.include_router(items_router)
+app.include_router(settings_router)
+app.include_router(values_router)
+
+
+@app.on_event("startup")
+def on_startup():
+    # idempotent: safe on Render restarts
+    db = SessionLocal()
+    try:
+        seed_minimal(db)
+    finally:
+        db.close()
